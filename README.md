@@ -10,15 +10,6 @@
   A dacade <a href="https://dacade.org/communities/celo-development-101" target="_blank">Celo Development 101</a> course dApp.
 </p>
 
-<p align="center">
-<a href="https://opensource.org/licenses/Apache-2.0"><img alt="apache" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
-<a href="https://github.com/Favour-dgreat/gymnaseum-dacade/actions/workflows/build_and_deploy.yml"><img alt="Build & Deploy" src="https://github.com/Favour-dgreat/gymnaseum-dacade/actions/workflows/build_and_deploy.yml/badge.svg?branch=main"></a>
-<img alt="Website" src="https://img.shields.io/website?down_color=red&down_message=Offiline&label=Gymnaseum&up_color=green&up_message=Online&url=">
-<img alt="GitHub issues" src="https://img.shields.io/github/issues/Favour-dgreat/gymnaseum-dacade">
-<img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat">
-<img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/Favour-dgreat/gymnaseum -dacade">
-<img alt="GitHub language count" src="https://img.shields.io/github/languages/count/Favour-dgreat/gymnaseum -dacade">
-</p>
 
 ## What is Gymnaseum?
 
@@ -26,8 +17,7 @@
   <a href="" target="_blank"><img src="https://i.ibb.co/gWvYRhj/Gymnaseum.png" alt="Gymnaseum"></a>
 </p>
 
-        Gymnaseum is an e-commerce platform powered by Blockchain Technology. Built with Solidity, you buy and sell 
-        Gymnaseum equipments and materials, and pay with Celo Cryptocurrency. You also place your service as a Gym trainer and get hired. Finally, in an upcoming feature of Gymnaseum, you get rewarded for exercising and keeping fit.
+<p> Gymnaseum is an e-commerce platform powered by Blockchain Technology. Built with Solidity, you buy and sell Gym equipments and materials, and pay with Celo Cryptocurrency. You also place your service as a Gym trainer and get hired. Finally, in an upcoming feature of Gymnaseum, you get rewarded for exercising and keeping fit.</p>
 
 ### Key Features
 
