@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="" target="_blank">Preview Gymnaseum </a>
+  <a href="https://favour-dgreat.github.io/gymnaseum-dacade/" target="_blank">Preview Gymnaseum </a>
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
 ## What is Gymnaseum?
 
 <p align="center">
-  <a href="" target="_blank"><img src="https://i.ibb.co/gWvYRhj/Gymnaseum.png" alt="Gymnaseum"></a>
+  <a href="https://favour-dgreat.github.io/gymnaseum-dacade/" target="_blank"><img src="https://i.ibb.co/gWvYRhj/Gymnaseum.png" alt="Gymnaseum"></a>
 </p>
 
 <p> Gymnaseum is an e-commerce platform powered by Blockchain Technology. Built with Solidity, you buy and sell Gym equipments and materials, and pay with Celo Cryptocurrency. You also place your service as a Gym trainer and get hired. Finally, in an upcoming feature of Gymnaseum, you get rewarded for exercising and keeping fit.</p>
