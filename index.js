@@ -17,4 +17,4 @@ let webpackCompiler = webpack(webpackConfig);
 let app = new webpackDevServer(webpackCompiler, webpackDevServerOptions);
 
 let port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`App listening on ${port}`));
+app.listen(port, () => console.log(`This app is running on port ${port}`));

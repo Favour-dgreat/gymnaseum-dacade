@@ -4,17 +4,6 @@ pragma solidity >=0.7.0 <0.9.0;
 
 import './GymnaseumService.sol';
 
-interface IERC20Token {
-  function transfer(address, uint256) external returns (bool);
-  function approve(address, uint256) external returns (bool);
-  function transferFrom(address, address, uint256) external returns (bool);
-  function totalSupply() external view returns (uint256);
-  function balanceOf(address) external view returns (uint256);
-  function allowance(address, address) external view returns (uint256);
-
-  event Transfer(address indexed from, address indexed to, uint256 value);
-  event Approval(address indexed owner, address indexed spender, uint256 value);
-}
 
 contract Gymnaseum {
 
@@ -101,12 +90,33 @@ contract Gymnaseum {
     string memory, 
     string memory, 
     string memory, 
-    string memory
+    string memory,
+    uint
   ) {
     ServiceInterface ServiceContract = ServiceInterface(address(serviceAddress));
     return ServiceContract.readService(_index);
   }
-
+    
+    // hire a service
+  function hireService(
+   uint _index,
+   uint _price,
+   address _service
+  ) public {
+      
+    require(
+    IERC20Token(cUsdTokenAddress).transferFrom(
+     msg.sender,
+      payable(_service),
+        _price
+      ),
+      "Failed to hire this service."
+    );
+   
+    ServiceInterface ServiceContract = ServiceInterface(address(serviceAddress));
+    ServiceContract.hireService(_index);
+  }
+  
   function buyProduct(uint _index) public payable  {
     require(
       IERC20Token(cUsdTokenAddress).transferFrom(

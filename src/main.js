@@ -5,7 +5,7 @@ import gymnaseumAbi from '../contract/gymnaseum.abi.json'
 import erc20Abi from "../contract/erc20.abi.json"
 
 const ERC20_DECIMALS = 18;
-const GContractAddress = "0xA9719f6d15628A4c3EdE8088A655fbdF43b37DF5";
+const GContractAddress = "0xa40984b129C3DEC3EE452F69a3A1af388cE28F5d";
 const erc20Address = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
 
 let kit, contract;
@@ -83,13 +83,16 @@ const getServices = async function() {
     for (let i = 0; i < _servicesLength; i++) {
     let _service = new Promise(async (resolve, reject) => {
       let p = await contract.methods.getService(i).call()
+    
       resolve({
+        index: i,
         user: p[0],
         name: p[1],
         image: p[2],
         description: p[3],
         location: p[4],
         contact: p[5],
+        hires: p[6],
       })
     })
     _services.push(_service)
@@ -214,9 +217,13 @@ function productTemplate(_product) {
   `
 }
 function serviceTemplate(_service) {
+
   return `
     <div class="card mb-4">
       <img class="card-img-top" src="${_service.image}" alt="...">
+      <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
+      ${_service.hires} Hires
+    </div>
       <div class="card-body text-dark text-left p-4 position-relative">
         <div class="translate-middle-y position-absolute top-0">
         ${identiconTemplate(_service.user)}
@@ -232,6 +239,13 @@ function serviceTemplate(_service) {
           <i class="bi bi-geo-alt-fill"></i>
           <span>${_service.location}</span>
         </p>
+        <div class="d-grid gap-2">
+        <a class="btn btn-lg btn-outline-dark hireBtn fs-6 p-3" id=${
+          _service.index
+        }>
+          Hire for ${BigNumber(5000000000000000000).shiftedBy(-ERC20_DECIMALS).toFixed(2)}cUSD
+        </a>
+      </div>
       </div>
     </div>
   `
@@ -299,3 +313,36 @@ document.querySelector("#Gymnaseummarketplace").addEventListener("click", async 
     }
   }
 })
+
+// trigger when the hire button is clicked
+document.querySelector("#GymnaseumServices").addEventListener("click", async (e) => {
+  if(e.target.className.includes("hireBtn")) {
+    const index = e.target.id;
+    notification("⌛ Waiting for payment approval...");
+    try {
+      let bigSum = BigInt(5000000000000000000);
+      const serviceAmountSum = bigSum.toString();
+    
+      await paymentApproval(serviceAmountSum);
+    } catch (error) {
+      notification(`⚠️ ${error}.`)
+    }
+    notification(`⌛ Awaiting payment to hire "${services[index].name}"...`)
+    try {
+      let bigSum = BigInt(5000000000000000000);
+      const serviceAmountSum = bigSum.toString();
+    
+      await contract.methods.hireService(index, serviceAmountSum, services[index].user).send({
+        from: kit.defaultAccount
+      })
+      notification(`🎉 You successfully hired "${services[index].name}".`)
+      getBalance()
+      getServices()
+    } catch (error) {
+      notification(`⚠️ ${error}.`)
+    }
+  }
+})
+
+
+
