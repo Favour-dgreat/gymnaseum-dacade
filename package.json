@@ -1,5 +1,8 @@
 {
   "main": "index.js",
+  "name": "gymnaseum",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
     "@celo/contractkit": "^1.0.2",
     "bignumber.js": "^9.0.1",
