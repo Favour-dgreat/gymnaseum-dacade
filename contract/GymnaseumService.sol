@@ -4,9 +4,9 @@ pragma solidity >=0.7.0 <0.9.0;
 
 interface ServiceInterface {
   function readServicesLength() external view returns (uint);
-  function readService(uint _index) external view returns (address, string memory, string memory, string memory, string memory, string memory, uint);
-  function writeService(string calldata _name, string calldata _image, string calldata _description, string calldata _location, string calldata _contact) external;
-//   hire a service interface
+  function readService(uint _index) external view returns (address user, string memory name, string memory image, string memory description, string memory location, string memory contact, uint rate, uint hiresLength);
+  function readServiceHire(uint _serviceIndex, uint _hireIndex) external view returns (address hirer, uint timestamp);
+  function writeService(string calldata _name, string calldata _image, string calldata _description, string calldata _location, string calldata _contact, uint _rate) external;
   function hireService(uint _index) external;
 }
 
@@ -24,6 +24,11 @@ interface IERC20Token {
 
 contract GymnaseumService {
 
+  struct Hire {
+    address hirer;
+    uint timestamp;
+  }
+
   struct Service {
     address payable user;
     string name;
@@ -31,62 +36,115 @@ contract GymnaseumService {
     string description;
     string location;
     string contact;
-    // track the number of times a gym service provider has been hired
-    // services will be hired a flat rate of 5cusd
-    uint hires;
-    
+    uint rate;
+    uint hiresLength;
+    mapping (uint => Hire) hires;
   }
 
   uint internal servicesLength = 0;
-//   address for the cUSD token
-  address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
   mapping (uint => Service) internal services;
+
+  event writeServiceEvent(
+    address user,
+    string name,
+    string image,
+    string description,
+    string location,
+    string contact,
+    uint rate
+  );
+
+  event hireServiceEvent(
+    address user,
+    address hirer,
+    uint amount,
+    uint timestamp
+  );
 
   function writeService(
     string memory _name,
     string memory _image,
     string memory _description, 
     string memory _location,
-    string memory _contact
+    string memory _contact,
+    uint _rate
   ) external {
-    services[servicesLength] = Service(
-      payable(tx.origin),
-      _name,
-      _image,
-      _description,
-      _location,
-      _contact,
-    //   hires will be initialized with 0
-      0
-    );
+    uint _hiresLength = 0;
+
+    Service storage newService = services[servicesLength];
+    newService.user = payable(tx.origin);
+    newService.name = _name;
+    newService.image = _image;
+    newService.description = _description;
+    newService.location = _location;
+    newService.contact = _contact;
+    newService.rate = _rate;
+    newService.hiresLength = _hiresLength;
+
     servicesLength++;
+
+    emit writeServiceEvent(
+      newService.user,
+      newService.name,
+      newService.image,
+      newService.description,
+      newService.location,
+      newService.contact,
+      newService.rate
+    );
   }
 
   function readService(uint _index) external view returns (
-    address,
-    string memory, 
-    string memory, 
-    string memory, 
-    string memory, 
-    string memory,
-    uint
+    address user,
+    string memory name, 
+    string memory image, 
+    string memory description, 
+    string memory location, 
+    string memory contact,
+    uint rate,
+    uint hiresLength
   ) {
     Service storage service = services[_index];
     return(
-      payable(service.user),
+      service.user,
       service.name,
       service.image,
       service.description,
       service.location,
       service.contact,
-      service.hires
+      service.rate,
+      service.hiresLength
+    );
+  }
+
+  function readServiceHire(uint _serviceIndex, uint _hireIndex) external view returns (
+    address hirer,
+    uint timestamp
+  ) {
+    Hire storage hire = services[_serviceIndex].hires[_hireIndex];
+    return(
+      hire.hirer,
+      hire.timestamp
     );
   }
   
-//   hire a service for use
-   function hireService(uint _index) public payable  {
+  function hireService(uint _index) external {
+    Service storage service = services[_index];
 
-    services[_index].hires++;
+    Hire memory newHire = Hire(
+      tx.origin,
+      block.timestamp
+    );
+
+    service.hires[service.hiresLength] = newHire;
+    service.hiresLength++;
+
+    emit hireServiceEvent(
+      service.user,
+      newHire.hirer,
+      service.rate,
+      newHire.timestamp
+    );
   }
 
   function readServicesLength() external view returns (uint) {

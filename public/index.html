@@ -1229,7 +1229,7 @@ Gymnaseum Equipments
             <span class="navbar-brand m-0 h4 fw-bold">Wallet Balance <br><br></span>
 
             <span class="nav-link border rounded-pill">
-              <span id="balance" style="color: dark;">Wallet Balance 0</span>
+              <span id="balance" style="color: dark;">0</span>
               cUSD
             </span>
           </div>
@@ -1248,9 +1248,9 @@ Gymnaseum Equipments
             Add product
           </a>
         </div><br><br>
-        <p class="bg-light text-dark" style="font-size: 20px;font-weight: bold;">Available Equipments:</p>
+        <p class="bg-light text-dark"><span style="font-weight: bold;">Available Equipments</span>: <span id="equipmentCounts" class="font-monospace">0</span></p>
 
-        <main id="Gymnaseummarketplace" class="row"></main>
+        <main id="Gymnaseummarketplace" class="row mt-3"></main>
       </div>
 <!--Modal-->
 <div
@@ -1460,7 +1460,14 @@ aria-hidden="true"
           <input type="text" id="newServiceLocation" name="newServiceLocation" placeholder="Your Country / State">
         </div>
       </div>
-     
+      <div class="row">
+        <div class="col-25">
+          <label for="newServiceRate">Rate</label>
+        </div>
+        <div class="col-75">
+          <input type="text" id="newServiceRate" name="newServiceRate" placeholder="Your Service Rate in cUSD">
+        </div>
+      </div>
       <div class="row">
         <div class="col-25">
           <label for="newServiceDescription">Service Description</label>
@@ -1475,7 +1482,7 @@ aria-hidden="true"
       </form>
     </div>
     <br><br>
-    <p class="bg-light text-dark" style="font-size: 20px;font-weight: bold;">Available Trainers:</p>
+    <p class="bg-light text-dark"><span style="font-weight: bold;">Available Trainers</span>: <span id="trainersCounts" class="font-monospace">0</span></p>
     <div id="GymnaseumServices" class="mt-5 row"></div>
 </section>
 

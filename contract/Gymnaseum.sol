@@ -19,13 +19,14 @@ contract Gymnaseum {
   }
 
   uint internal productsLength = 0;
-  address internal serviceAddress;
+  address payable internal onwerAddress;
+  ServiceInterface internal ServiceContract;
   mapping (uint => Product) internal products;
   address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
-  address payable internal onwerAddress = payable(0x47baAd3608FcE9719b4b9B90AF4Bb834D747bC99);
 
   constructor(address serviceContractAddress) {
-    serviceAddress = serviceContractAddress;
+    onwerAddress = payable(msg.sender);
+    ServiceContract = ServiceInterface(address(serviceContractAddress));
   }
 
   function writeProduct(
@@ -55,21 +56,21 @@ contract Gymnaseum {
     string memory _image,
     string memory _description, 
     string memory _location,
-    string memory _contact
+    string memory _contact,
+    uint _rate
   ) public {
-    ServiceInterface ServiceContract = ServiceInterface(address(serviceAddress));
-    ServiceContract.writeService(_name, _image, _description, _location, _contact);
+    ServiceContract.writeService(_name, _image, _description, _location, _contact, _rate);
   }
 
   function readProduct(uint _index) public view returns (
-    address payable,
-    string memory, 
-    string memory, 
-    string memory, 
-    string memory, 
-    uint,
-    uint, 
-    uint
+    address payable owner,
+    string memory name, 
+    string memory image, 
+    string memory description, 
+    string memory location, 
+    uint serviceFee,
+    uint price, 
+    uint sold
   ) {
     Product storage product = products[_index];
     return(
@@ -85,35 +86,40 @@ contract Gymnaseum {
   }
 
   function getService(uint _index) public view returns(
-    address,
-    string memory, 
-    string memory, 
-    string memory, 
-    string memory, 
-    string memory,
-    uint
+    address user,
+    string memory name, 
+    string memory image, 
+    string memory description, 
+    string memory location, 
+    string memory contact,
+    uint rate,
+    uint hiresLength
   ) {
-    ServiceInterface ServiceContract = ServiceInterface(address(serviceAddress));
     return ServiceContract.readService(_index);
   }
+
+  function getServiceHire(uint _serviceIndex, uint _hireIndex) public view returns(
+    address hirer,
+    uint timestamp
+  ) {
+    return ServiceContract.readServiceHire(_serviceIndex, _hireIndex);
+  }
     
-    // hire a service
+  // hire a service
   function hireService(
    uint _index,
    uint _price,
-   address _service
+   address _serviceUser
   ) public {
-      
     require(
-    IERC20Token(cUsdTokenAddress).transferFrom(
-     msg.sender,
-      payable(_service),
+      IERC20Token(cUsdTokenAddress).transferFrom(
+        msg.sender,
+        payable(_serviceUser),
         _price
       ),
       "Failed to hire this service."
     );
-   
-    ServiceInterface ServiceContract = ServiceInterface(address(serviceAddress));
+
     ServiceContract.hireService(_index);
   }
   
@@ -142,7 +148,6 @@ contract Gymnaseum {
   }
 
   function getServicesLength() public view returns (uint) {
-    ServiceInterface ServiceContract = ServiceInterface(address(serviceAddress));
     return ServiceContract.readServicesLength();
   }
 }
