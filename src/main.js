@@ -5,7 +5,7 @@ import gymnaseumAbi from '../contract/gymnaseum.abi.json'
 import erc20Abi from "../contract/erc20.abi.json"
 
 const ERC20_DECIMALS = 18;
-const GContractAddress = "0xa40984b129C3DEC3EE452F69a3A1af388cE28F5d";
+const GContractAddress = "0x1176fa43F7FA4215d23EbBb74696E5D6852aCA81";
 const erc20Address = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
 
 let kit, contract;
@@ -56,20 +56,22 @@ const getBalance = async function () {
 
 const getProducts = async function() {
   const _productsLength = await contract.methods.getProductsLength().call()
+  document.querySelector("#equipmentCounts").textContent = _productsLength + ' products';
+
   const _products = []
     for (let i = 0; i < _productsLength; i++) {
     let _product = new Promise(async (resolve, reject) => {
       let p = await contract.methods.readProduct(i).call()
       resolve({
         index: i,
-        owner: p[0],
-        name: p[1],
-        image: p[2],
-        description: p[3],
-        location: p[4],
-        fee: new BigNumber(p[5]),
-        price: new BigNumber(p[6]),
-        sold: p[7],
+        owner: p.owner,
+        name: p.name,
+        image: p.image,
+        description: p.description,
+        location: p.location,
+        fee: new BigNumber(p.serviceFee),
+        price: new BigNumber(p.price),
+        sold: p.sold
       })
     })
     _products.push(_product)
@@ -77,22 +79,43 @@ const getProducts = async function() {
   products = await Promise.all(_products)
   renderProducts()
 }
+const getServiceHires = async function (serviceIndex, hiresLength) {
+  const _hires = [];
+  for (let index = 0; index < hiresLength; index++) {
+    let _hire = new Promise(async (resolve, reject) => {
+      await contract.methods.getServiceHire(serviceIndex, index).call().then((h) => {
+        resolve({
+          index: index,
+          hirer: h.hirer,
+          timestamp: new Date(h.timestamp * 1000).toUTCString()
+        })
+      })
+    });
+    _hires.push(_hire)
+  }
+  return await Promise.all(_hires)
+}
+
 const getServices = async function() {
   const _servicesLength = await contract.methods.getServicesLength().call()
+  document.querySelector("#trainersCounts").textContent = _servicesLength + ' services';
+
   const _services = []
     for (let i = 0; i < _servicesLength; i++) {
     let _service = new Promise(async (resolve, reject) => {
-      let p = await contract.methods.getService(i).call()
-    
+      let s = await contract.methods.getService(i).call()
+
       resolve({
         index: i,
-        user: p[0],
-        name: p[1],
-        image: p[2],
-        description: p[3],
-        location: p[4],
-        contact: p[5],
-        hires: p[6],
+        user: s.user,
+        name: s.name,
+        image: s.image,
+        description: s.description,
+        location: s.location,
+        contact: s.contact,
+        rate: new BigNumber(s.rate),
+        hiresLength: s.hiresLength,
+        hires: await getServiceHires(i, s.hiresLength)
       })
     })
     _services.push(_service)
@@ -140,7 +163,8 @@ document
       document.getElementById("newServiceImgUrl").value,
       document.getElementById("newServiceDescription").value,
       document.getElementById("newServiceLocation").value,
-      document.getElementById("newServiceContact").value
+      document.getElementById("newServiceContact").value,
+      new BigNumber(document.getElementById("newServiceRate").value).shiftedBy(ERC20_DECIMALS).toString()
     ]
 
     serviceNotification(`⌛ Adding "${serviceParams[0]}"...`)
@@ -185,6 +209,26 @@ function renderServices() {
     document.getElementById("GymnaseumServices").appendChild(newDiv)
   })
 }
+async function renderServiceHires(index, hires) {
+  let hireID = await "service" + index + "Hires";
+
+  if(hires) {
+    document.getElementById(hireID).innerHTML = "";
+    hires.forEach((_hire) => {
+      const newUl = document.createElement("ul")
+      newUl.innerHTML = hireTemplate(_hire)
+      document.getElementById(hireID).appendChild(newUl)
+    })
+  } else {
+    document.getElementById(hireID).innerHTML = "<p class='text-center'>No Service Hire</p>";
+  }
+}
+
+function hireTemplate(_hire) {
+  return `
+    <li>${_hire.hirer} - ${_hire.timestamp}</li>
+  `
+}
 
 function productTemplate(_product) {
   return `
@@ -217,16 +261,19 @@ function productTemplate(_product) {
   `
 }
 function serviceTemplate(_service) {
+  renderServiceHires(_service.index, _service.hires)
 
   return `
     <div class="card mb-4">
       <img class="card-img-top" src="${_service.image}" alt="...">
       <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
-      ${_service.hires} Hires
-    </div>
+        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#service${_service.index}Modal" style="text-decoration: none;">
+          ${_service.hiresLength} Hires
+        </button>
+      </div>
       <div class="card-body text-dark text-left p-4 position-relative">
         <div class="translate-middle-y position-absolute top-0">
-        ${identiconTemplate(_service.user)}
+          ${identiconTemplate(_service.user)}
         </div>
         <h2 class="card-title fs-4 fw-bold mt-2">${_service.name}</h2>
         <p class="card-text mb-1">
@@ -243,9 +290,27 @@ function serviceTemplate(_service) {
         <a class="btn btn-lg btn-outline-dark hireBtn fs-6 p-3" id=${
           _service.index
         }>
-          Hire for ${BigNumber(5000000000000000000).shiftedBy(-ERC20_DECIMALS).toFixed(2)}cUSD
+          Hire for ${_service.rate.shiftedBy(-ERC20_DECIMALS).toFixed(2)} cUSD
         </a>
       </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="service${_service.index}Modal" tabindex="-1" aria-labelledby="service${_service.index}ModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content text-dark">
+          <div class="modal-header">
+            <h5 class="modal-title" id="service${_service.index}ModalLabel">${_service.name} Hires</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div id="service${_service.index}Hires"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
   `
@@ -318,28 +383,24 @@ document.querySelector("#Gymnaseummarketplace").addEventListener("click", async 
 document.querySelector("#GymnaseumServices").addEventListener("click", async (e) => {
   if(e.target.className.includes("hireBtn")) {
     const index = e.target.id;
-    notification("⌛ Waiting for payment approval...");
+    let servicePrice = BigInt(services[index].rate).toString();
+
+    serviceNotification("⌛ Waiting for payment approval...");
     try {
-      let bigSum = BigInt(5000000000000000000);
-      const serviceAmountSum = bigSum.toString();
-    
-      await paymentApproval(serviceAmountSum);
+      await paymentApproval(servicePrice);
     } catch (error) {
-      notification(`⚠️ ${error}.`)
+      serviceNotification(`⚠️ ${error}.`)
     }
-    notification(`⌛ Awaiting payment to hire "${services[index].name}"...`)
+    serviceNotification(`⌛ Awaiting payment to hire "${services[index].name}"...`)
     try {
-      let bigSum = BigInt(5000000000000000000);
-      const serviceAmountSum = bigSum.toString();
-    
-      await contract.methods.hireService(index, serviceAmountSum, services[index].user).send({
+      await contract.methods.hireService(index, servicePrice, services[index].user).send({
         from: kit.defaultAccount
       })
-      notification(`🎉 You successfully hired "${services[index].name}".`)
+      serviceNotification(`🎉 You successfully hired "${services[index].name}".`)
       getBalance()
       getServices()
     } catch (error) {
-      notification(`⚠️ ${error}.`)
+      serviceNotification(`⚠️ ${error}.`)
     }
   }
 })
